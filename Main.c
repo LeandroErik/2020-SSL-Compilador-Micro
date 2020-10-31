@@ -303,7 +303,7 @@ TOKEN Scanner(void){/*Esa funcion simula al scanner(analizador lexico) ,y
 	char c;
 	int col, i = 0, estado_actual = 0;
 	/*Esta es la tabla de transiciones con NUMESTADOS = 15 Y NUMCOL= 13*/
-	static int tabla [NUMESTADOS][NUMCOL]={
+	static int tabla [NUMESTADOS][NUMCOLS]={
 		{1,3,5,6,7,8,9,10,11,14,13,0,14},
 		{1,1,2,2,2,2,2,2,2,2,2,2,2},
 		{14,14,14,14,14,14,14,14,14,14,14,14,14},
@@ -327,7 +327,9 @@ TOKEN Scanner(void){/*Esa funcion simula al scanner(analizador lexico) ,y
 					necesitamos ingresar unos nuevos se debe limpiar*/
 
 	do{
-		c = getc(archivo);
+		c = getc(archivo);/*La funcion getc trae caracter a caracter del archivo
+							La función getc retorna el carácter siguiente desde el stream de entrada apuntado por stream. Si el stream está en el final de fichero, el indicador del final de fichero para el stream es activado y getc retorna EOF. 
+							Si ocurre un error de lectura, el indicador de error para el stream es activado y getc retorna EOF.*/
 		col = columna(c);
 		estado_actual = tabla[estado_actual][col];
 		if (col!= 11){
