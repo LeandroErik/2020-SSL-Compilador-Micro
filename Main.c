@@ -12,19 +12,19 @@
 typedef enum {
 	INICIO, FIN, LEER, ESCRIBIR, ID, CONSTANTE, PARENIZQUIERDO,
 	PARENDERECHO, PUNTOYCOMA, COMA, ASIGNACION, SUMA, RESTA, FDT, ERRORLEXICO
-} TOKEN;
+} TOKEN; //nombre de los tokens que pasaran por el arbol de analisis sintactico, es decir futuras hojas del arbol
 
 typedef struct{
 	TOKEN clase;
 	char nombre[TAMLEX];
 	int valor;
-} REG_EXPRESION;
+} REG_EXPRESION; //declaracion de una estructura llamada REG_EXPRESION con tres campos,tipo token,tipo char y tipo int
 
-FILE * archivo;
+FILE * archivo; //declaracion de archivos
 FILE * archivoSalida;
 
 
-char buffer[TAMLEX];
+char buffer[TAMLEX]; //para usar como auxiliar
 
 TOKEN tokenActual;
 int flagToken;
@@ -35,7 +35,7 @@ typedef struct{
 } RegTS;
 
 
-//////////////Defino Funciones///////////////////
+//////////////Declaracion de Funciones///////////////////
 
 void Match(TOKEN token);
 void Objetivo(void);
