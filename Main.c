@@ -1,10 +1,15 @@
+/*Analisis sintactico desendente recursivo ,este permite ser programado por nosotros*/
 /////////////////////////INCLUYO BIBLIOTECAS////////////////
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
-#define TAMLEX 33
+#define NUMESTADOS 15 /*TAMAÑO DE LA TABLA DE TRANSICIONES*/
+#define NUMCOLS 13
+
+#define TAMLEX 32+1 /*Defino el numero maximo de cracteres,en este caso 32 caracteres*/
+#define TAMNOM 20+1
 
 
 ///////Defino Variables
@@ -89,12 +94,12 @@ int main(int argc, char* argv[]) {
 
 	archivoSalida = fopen("erik.txt", "wb+");
 
-	Objetivo(); // ejecutamos el programa
+	Objetivo(); /*Este seria el asioma que inicia el programa*/
 
 	fclose(archivo);
 
 	fclose(archivoSalida);
-	
+	/*Se procede a cerrar el archivo*/
 
 	return EXIT_SUCCESS;
 }
@@ -282,8 +287,10 @@ void Identificador(REG_EXPRESION * resultado){
 }
 
 /* -----------------------------------------------SCANNER------------------------------------------------------*/
-
-int esEstadoFinal(int e){
+/*Es importante tener en cuenta que el Scanner es una rutina que produce y
+ 	retorna la representación del correspondiente token, uno por vez, 
+ 	en la medida que es invocada por el Parser.*/
+int esEstadoFinal(int e){ /*evalua siu es estado final*/
 	switch (e){
 		case 0: case 1: case 3: case 11: case 14:
 			return 0;
@@ -291,11 +298,12 @@ int esEstadoFinal(int e){
 	return 1;
 }
 
-TOKEN Scanner(void){
+TOKEN Scanner(void){/*Esa funcion simula al scanner(analizador lexico) ,y 
+				devuelve un token,esto lo hace con la tabal de transiciones */
 	char c;
 	int col, i = 0, estado_actual = 0;
-
-	static int tabla [15][13]={
+	/*Esta es la tabla de transiciones con NUMESTADOS = 15 Y NUMCOL= 13*/
+	static int tabla [NUMESTADOS][NUMCOL]={
 		{1,3,5,6,7,8,9,10,11,14,13,0,14},
 		{1,1,2,2,2,2,2,2,2,2,2,2,2},
 		{14,14,14,14,14,14,14,14,14,14,14,14,14},
@@ -311,16 +319,19 @@ TOKEN Scanner(void){
 		{14,14,14,14,14,14,14,14,14,12,14,14,14},
 		{14,14,14,14,14,14,14,14,14,14,14,14,14},
 		{14,14,14,14,14,14,14,14,14,14,14,14,14}
-	};
+	};/*Si nos fijamos al AFD que se ascoia a esta tabla ,podemos ver mas claro como 
+		son los identificadore los operadores sus estados final e inicial*/
 
-	LimpiarBuffer();
+	LimpiarBuffer();/*Limpio el buffer,este es un vector que contiene los caracteres 
+					que son ingresados a medida que se va reconociendo como 
+					necesitamos ingresar unos nuevos se debe limpiar*/
 
 	do{
 		c = getc(archivo);
 		col = columna(c);
 		estado_actual = tabla[estado_actual][col];
 		if (col!= 11){
-			AgregarCaracter(c, i);
+			AgregarCaracter(c, i); /*Agreamos en el BUFFER EL CARACTER Y SU CONTADOR*/
 			i++;
 		}
 	}while (!esEstadoFinal(estado_actual));
