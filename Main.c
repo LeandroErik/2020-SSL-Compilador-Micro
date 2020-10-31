@@ -5,6 +5,8 @@
 #include <ctype.h>
 
 #define TAMLEX 33
+
+
 ///////Defino Variables
 
 typedef enum {
@@ -87,7 +89,7 @@ int main(int argc, char* argv[]) {
 
 	archivoSalida = fopen("erik.txt", "wb+");
 
-	Objetivo();
+	Objetivo(); // ejecutamos el programa
 
 	fclose(archivo);
 
