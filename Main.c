@@ -4,8 +4,8 @@
 #include <string.h>
 #include <ctype.h>
 
-#define TAMLEX 33
-///////Defino Variables
+#define TAMLEX 33 //declaracion de variable global para ser usado como tamanio maximo de los lexemas
+
 
 typedef enum {
 	INICIO, FIN, LEER, ESCRIBIR, ID, CONSTANTE, PARENIZQUIERDO,
@@ -29,12 +29,12 @@ int flagToken;
 
 typedef struct{
 	char identificador[TAMLEX];
-	TOKEN t; /* t=0, 1, 2, 3 Palabra Reservada, t=ID=4 Identificador */
+	TOKEN t; /* t=0, 1, 2, 3 Palabra Reservada, t=ID=4 Identificador *////////noooo he revisado
 } RegTS;
 
 
 //////////////Declaracion de Funciones///////////////////
-
+// son funciones void, debido a que en ansi C son las usadas para los procedimientos de analisis sintactico (PAS)
 void Match(TOKEN token);
 void Objetivo(void);
 void Programa(void);
