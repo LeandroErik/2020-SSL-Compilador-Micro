@@ -19,6 +19,12 @@ typedef enum {
 	PARENDERECHO, PUNTOYCOMA, COMA, ASIGNACION, SUMA, RESTA, FDT, ERRORLEXICO
 } TOKEN; //nombre de los tokens que pasaran por el arbol de analisis sintactico, es decir futuras hojas del arbol
 
+/*REG_OPERACION, que solo contendrá el valor del token SUMA o RESTA.
+2. REG_EXPRESION, que contendrá el tipo de expresión y el valor que le corresponde; este
+valor puede ser una cadena (para el caso de un identificador) o un número entero (para el
+caso de una constante). La cadena será almacenada en un vector de caracteres previamente
+definido y tendrá una longitud máxima de 32 caracteres, límite que se informa en la sección
+3.2.1 con respecto a los identificadores.*/
 typedef struct{
 	TOKEN clase;
 	char nombre[TAMLEX];
@@ -35,9 +41,9 @@ TOKEN tokenActual;
 int flagToken;
 
 typedef struct{
-	char identificador[TAMLEX];
+	char identificador[TAMLEX]; //contiene el identificador
 	TOKEN t; /* t=0, 1, 2, 3 Palabra Reservada, t=ID=4 Identificador */
-} RegTS;
+} RegTS; //se alacena los tokens y identificadores que se fueron leyendo a lo largo del mprograma
 
 
 //////////////Declaracion de Funciones///////////////////
@@ -83,7 +89,7 @@ void Terminar(void);
 int main(int argc, char* argv[]) {
 
 
-    archivo = fopen("datos.txt", "r+"); 
+    archivo = fopen("entrada.txt", "r+"); 
     // con esto abro el archivo "datos.txt" en la cual hay varios lexemas aser reconocidos
     if (!archivo)
     {
@@ -92,15 +98,15 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-	archivoSalida = fopen("erik.txt", "wb+");
+	archivoSalida = fopen("salida.txt", "wb+");
 
-	Objetivo(); /*Este seria el asioma que inicia el programa*/
+	Objetivo(); /*Este seria el asioma que inicia el proceso de compilacion*/
 
 	fclose(archivo);
 
 	fclose(archivoSalida);
 	/*Se procede a cerrar el archivo*/
-
+		
 	return EXIT_SUCCESS;
 }
 
@@ -127,14 +133,18 @@ int validacion (char* archivo,char c){
 
 
 /* ------------------------------------------PARSER---------------------------------------------------------------*/
-
-void Match(TOKEN token){
-	if (ProximoToken()!=token){
+/*Éste verifica si los tokens que recibe del Scanner forman secuencias o construcciones válidas, 
+según la Gramática Sintáctica del LP correspondiente.Convierte el flujo de tokens en un árbol de análisis sintáctico,
+ generalmente implícito. Este árbol representa, de un modo jerárquico, a la secuencia analizada, donde los tokens que
+  forman la construcción son las hojas del árbol.*/
+  
+void Match(TOKEN token){ /*verifica que haya concordancia con el token*/
+	if (ProximoToken()!=token){ //Proximo token retorn el proximo caracter a ser correspondido
 		ErrorSintactico();
 	}
 	flagToken=0;
 }
-
+/*Procedimiento de analisis sintactico (Pas)*/
 void Objetivo(void)
 {
  /* <objetivo> -> <programa> FDT #terminar */
@@ -145,35 +155,41 @@ void Objetivo(void)
 
 
 void Programa(void){
+	
+	/* <programa> -> #comenzar INICIO <listaSentencias> FIN */
+	 Comenzar();//de inicio semántico en caso de corresponder
 	Match(INICIO);
-	ListaSentencias();
+	ListaSentencias(); /*este es un PAS*/
 	Match(FIN);
-	Terminar();
+	
 }
 
-void ListaSentencias(void){
-	Sentencia();
-	while(1){
-		switch(ProximoToken()){
-			case ID: case LEER: case ESCRIBIR:
-				Sentencia();
-				break;
-			default:
-				return;
-		}
-	}
-}
 
-void Sentencia(void){
+void ListaSentencias (void){ 
+//<listaSentencias> -> <sentencia> {<sentencia>} 
+	Sentencia();// la primera que detecta 
+	while(1){//ciclo infinito y se detiene al no encontra sentencias
+		switch (ProximoToken()){ 
+		case ID: case LEER: case ESCRIBIR: //detecto un token correcto 
+			Sentencia(); //procesa la SECUENCIA OPCIONAL
+			break; 
+			default: 
+			return; // si no es sentencia termina la funcion
+		}//del análisis de caso
+ 	}// de la repeticion 
+}// del proceso
+
+void Sentencia(void){ //Lo que hacemos aca es verificar la concordancia del token y lo que masomenos se espera
+					  /* como esta construida la sentencias,en caso de estar bien se procede a almacenar los eventos en un txt*/
 	TOKEN tok = ProximoToken();
 	REG_EXPRESION izquierda, derecha;
 	switch (tok){
-		case ID:
-			Identificador(&izquierda);
-			Match(ASIGNACION);
-			Expresion(&derecha);
-			Asignar(izquierda, derecha);
-			Match(PUNTOYCOMA);
+		case ID:  //Un ejemplo seria a:=55+55 o... b:=a
+			Identificador(&izquierda);//se pasa por refrencia el valor ,para que esta sea llenado
+			Match(ASIGNACION); //Invocacion al scanner y verifica si hay concordancia con el token asigancion
+			Expresion(&derecha);//lo mismo ,se pasa por referencia asi es asignado el valor de la derecha
+			Asignar(izquierda, derecha); //realizo la acciony escribo el output
+			Match(PUNTOYCOMA);//verifica que haya concordacia con el punto y coma
 			break;
 		case LEER:
 			Match(LEER);
@@ -234,7 +250,7 @@ void OperadorAditivo(char * resultado){
 		ErrorSintactico();
 }
 
-void ErrorSintactico(){
+void ErrorSintactico(){ //en caso de nmo haber concordancia,se dice que hay error sintactico
 	printf("ERROR SINTACTICO");
 }
 
@@ -419,7 +435,12 @@ void LimpiarBuffer(void){
 }
 
 /*-----------------------------Rutinas Semanticas-------------------------------*/
+/*Tenmos a la rutina semanticas que estas funciones estan asociadas a cada no terminal,hacen una determinada accion*/
+
+
 REG_EXPRESION ProcesarCte(void){
+	/* convierte cadena que representa número a número entero y construye un
+registro semántico */
 	REG_EXPRESION reg;
 	reg.clase = CONSTANTE;
 	strcpy(reg.nombre, buffer);
@@ -470,6 +491,9 @@ REG_EXPRESION GenInfijo(REG_EXPRESION e1, char * op, REG_EXPRESION e2){
 	return reg;
 }
 
+/*Generar: una función que recibe cuatro argumentos que son cadenas, que corresponden al
+código de operación y a los tres operandos de cada instrucción de la MV; esta función
+producirá la correspondiente instrucción en el flujo de salida.*/
 void Generar(char * co, char * a, char * b, char * c){
 	fprintf(archivoSalida, "%s %s", co, a);
 
@@ -481,14 +505,17 @@ void Generar(char * co, char * a, char * b, char * c){
 
 	fprintf(archivoSalida, "\n");
 }
-
+/*Extraer: una función tal que dado un registro semántico, retorna la cadena que contiene.
+Esta cadena puede ser un identificador, un código de operación, representar una constante
+antes de ser convertida a número entero, etc.*/
 char * Extraer(REG_EXPRESION * reg){
 	return reg->nombre;
 }
 
-int Buscar(char * id, RegTS * TS, TOKEN * t){
+int Buscar(char * id, RegTS * TS, TOKEN * t){ //dado una cadena que representa un 
+//identificador determina si esta en la tabla de simbolos
 	int i = 0;
-	while (strcmp("$", TS[i].identificador)){
+	while (strcmp("$", TS[i].identificador)){ //strcmp -> hace una comparacion de strings
 		if (!strcmp(id, TS[i].identificador)){
 			*t = TS[i].t;
 			return 1;
@@ -498,7 +525,7 @@ int Buscar(char * id, RegTS * TS, TOKEN * t){
 	return 0;
 }
 
-void Colocar(char * id, RegTS * TS){
+void Colocar(char * id, RegTS * TS){ //Coloca una cadena en la tabla de simbolos
 	int i = 4;
 	while (strcmp("$", TS[i].identificador)) i++;
 	if (i <= 999){
@@ -507,22 +534,23 @@ void Colocar(char * id, RegTS * TS){
 		strcpy(TS[++i].identificador, "$" );
 	}
 }
-void Chequear(char * s){
+void Chequear(char * s){ /* chequea que un carater este en la tabal de simbolos*/
 	TOKEN t;
 	if (!Buscar(s, TS, &t)){
-		Colocar(s, TS);
-		Generar("Declara", s, "Entera", "");
+		Colocar(s, TS);//LO ALAMCENA EN LA TABLA DE SIMBOLOS
+		Generar("Declara", s, "Entera", ""); //GENERA EL OUTPUT
 	}
 }
 
 void Asignar(REG_EXPRESION izq, REG_EXPRESION der){
-	Generar("Almacena", Extraer(&der), izq.nombre, "");
+	/* genera la instrucción para la asignación */
+	Generar("Almacena", Extraer(&der), izq.nombre, ""); //escribe en el salid.txt
 }
 
 void Comenzar(void){
-
+Generar("COMIENZO", "", "", "");
 }
 
 void Terminar(void){
-	Generar("Se terminaron las instrucciones", "", "", "");
+	Generar("FIN", "", "", "");
 }

@@ -1,3 +1,4 @@
+COMIENZO 
 Declara a,Entera
 Read a,Entera
 Declara b,Entera
@@ -12,5 +13,4 @@ Write cc,Entera
 Declara Temp&3,Entera
 Sumar a,4,Temp&3
 Write Temp&3,Entera
-Se terminaron las instrucciones 
-Se terminaron las instrucciones 
+FIN 
