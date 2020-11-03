@@ -1,0 +1,15 @@
+Declara a,Entera
+Almacena 5,a
+Declara b,Entera
+Almacena 6,b
+Almacena 8,a
+Lee a,Entera
+Lee b,Entera
+Declara Temp&1,Entera
+Sumar 1,2,Temp&1
+Escribe Temp&1,Entera
+Escribe a,Entera
+Declara Temp&2,Entera
+Sumar a,b,Temp&2
+Escribe Temp&2,Entera
+Se terminaron las instrucciones 
